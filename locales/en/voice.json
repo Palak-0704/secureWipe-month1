@@ -1,0 +1,10 @@
+[
+	{ "step": "start", "text": "Welcome to SecureWipe!" },
+	{ "step": "device_select", "text": "Please select the device you want to securely wipe." },
+	{ "step": "wipe_mode", "text": "Choose wipe mode: Dry run (safe) or Real wipe (dangerous, for lab/test devices only)." },
+	{ "step": "wipe_method", "text": "Select the wipe method: Overwrite, ATA Secure Erase, NVMe Sanitize, or Crypto-Erase." },
+	{ "step": "confirm", "text": "Are you sure you want to wipe this device? Please confirm to proceed." },
+	{ "step": "completed", "text": "Wipe process completed. Thank you!" },
+	{ "step": "error", "text": "An error occurred. Please check the logs or contact support." },
+	{ "step": "certificate", "text": "Your certificate has been generated successfully." }
+]

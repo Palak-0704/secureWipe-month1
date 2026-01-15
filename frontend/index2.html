@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nullifyr - Professional Data Wiping Solution</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00acc1;
+            --primary-dark: #00838f;
+            --primary-light: #4dd0e1;
+            --secondary-color: #3f51b5;
+            --secondary-dark: #303f9f;
+            --accent-color: #00e676;
+            --background-dark: #0a0e27;
+            --background-medium: #151932;
+            --background-light: #1e2139;
+            --surface-color: #262a47;
+            --surface-light: #2d3151;
+            --error-color: #ff5252;
+            --warning-color: #ffab40;
+            --success-color: #69f0ae;
+            --text-primary: #ffffff;
+            --text-secondary: #b0bec5;
+            --text-disabled: #546e7a;
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --shadow-1: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-2: 0 8px 16px rgba(0, 0, 0, 0.2);
+            --shadow-3: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background-color: var(--background-medium);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            box-shadow: var(--shadow-2);
+            z-index: 100;
+            position: relative;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 8px rgba(0, 172, 193, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 172, 193, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(0, 172, 193, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 172, 193, 0);
+            }
+        }
+
+        .app-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.9rem 1.5rem;
+            gap: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: var(--primary-color);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .nav-item:hover::before {
+            transform: translateX(0);
+        }
+
+        .nav-item.active {
+            background-color: rgba(0, 172, 193, 0.15);
+            color: var(--primary-light);
+        }
+
+        .nav-item.active::before {
+            transform: translateX(0);
+        }
+
+        .nav-item .material-icons {
+            font-size: 1.4rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--background-dark);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 1.5rem 2rem;
+            background-color: var(--surface-color);
+            box-shadow: var(--shadow-1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, var(--primary-light), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .icon-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .icon-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .icon-button:active::after {
+            width: 100px;
+            height: 100px;
+        }
+
+        .icon-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Welcome Screen Styles */
+        .welcome-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 2rem;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-logo {
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 3.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .welcome-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary-light), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeIn 1s ease 0.3s both;
+        }
+
+        .welcome-description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease 0.6s both;
+        }
+
+        .btn {
+            padding: 0.9rem 2.2rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 1s ease 0.9s both;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 172, 193, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 172, 193, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(63, 81, 181, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(63, 81, 181, 0.4);
+        }
+
+        /* Dashboard Styles */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: linear-gradient(135deg, var(--surface-color), var(--surface-light));
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-1);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            animation: slideInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .card-content {
+            color: var(--text-secondary);
+        }
+
+        .card-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            background: linear-gradient(45deg, var(--primary-light), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background-color: rgba(105, 240, 174, 0.15);
+            color: var(--success-color);
+        }
+
+        .status-warning {
+            background-color: rgba(255, 171, 64, 0.15);
+            color: var(--warning-color);
+        }
+
+        .status-error {
+            background-color: rgba(255, 82, 82, 0.15);
+            color: var(--error-color);
+        }
+
+        /* Device Selection Styles */
+        .device-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .device-card {
+            background: linear-gradient(135deg, var(--surface-color), var(--surface-light));
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-1);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .device-card:nth-child(1) { animation-delay: 0.1s; }
+        .device-card:nth-child(2) { animation-delay: 0.2s; }
+        .device-card:nth-child(3) { animation-delay: 0.3s; }
+        .device-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .device-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 172, 193, 0.1), rgba(63, 81, 181, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .device-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-2);
+        }
+
+        .device-card:hover::before {
+            opacity: 1;
+        }
+
+        .device-card.selected {
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 15px rgba(0, 172, 193, 0.3);
+        }
+
+        .device-card.selected::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 40px 40px 0;
+            border-color: transparent var(--primary-color) transparent transparent;
+        }
+
+        .device-card.selected .selected-check {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            color: white;
+            z-index: 1;
+        }
+
+        .device-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 172, 193, 0.3);
+        }
+
+        .device-info {
+            flex: 1;
+        }
+
+        .device-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .device-details {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .device-status {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background-color: rgba(0, 230, 118, 0.15);
+            color: var(--success-color);
+        }
+
+        /* Wipe Advisor Styles */
+        .advisor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .risk-score {
+            background: linear-gradient(135deg, var(--surface-color), var(--surface-light));
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: var(--shadow-1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .score-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--primary-color) 0% 75%, 
+                var(--background-light) 75% 100%
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem 0;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 172, 193, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .score-inner {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-light);
+            animation: countUp 1.5s ease;
+        }
+
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .recommendations {
+            background: linear-gradient(135deg, var(--surface-color), var(--surface-light));
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-1);
+            animation: fadeIn 0.5s ease 0.3s both;
+        }
+
+        .recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            animation: slideInRight 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .recommendation-item:nth-child(1) { animation-delay: 0.1s; }
+        .recommendation-item:nth-child(2) { animation-delay: 0.2s; }
+        .recommendation-item:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .recommendation-icon {
+            color: var(--primary-color);
+            margin-top: 2px;
+        }
+
+        /* Loading State */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--background-light);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: var(--background-light);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 3px;
+            animation: progressAnimation 2s ease-in-out;
+        }
+
+        @keyframes progressAnimation {
+            0% {
+                width: 0%;
+            }
+            100% {
+                width: 75%;
+            }
+        }
+
+        /* Scan Button Styles */
+        .scan-button-container {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .scan-button {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 172, 193, 0.3);
+        }
+
+        .scan-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 172, 193, 0.4);
+        }
+
+        .scan-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Chatbot Styles */
+        .chat-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: var(--transition);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .chat-button:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-3);
+        }
+
+        .chat-modal {
+            position: fixed;
+            bottom: 6rem;
+            right: 2rem;
+            width: 380px;
+            height: 500px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-2);
+            display: flex;
+            flex-direction: column;
+            z-index: 999;
+            transform: scale(0.8) translateY(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .chat-modal.active {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .chat-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .chat-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .chat-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chat-message {
+            max-width: 80%;
+            padding: 1rem;
+            border-radius: 18px;
+            animation: messageSlideIn 0.3s ease;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-message.bot {
+            background: var(--surface-light);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-message.user {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-input-container {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--surface-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 0.8rem 1.5rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .chat-send {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .chat-send:hover {
+            transform: scale(1.1);
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 0.4rem;
+            padding: 1rem;
+            background: var(--surface-light);
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            animation: typingDot 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingDot {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Styles */
+        .menu-toggle {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                height: 100vh;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .advisor-container {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .device-list {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome-title {
+                font-size: 2.2rem;
+            }
+
+            .welcome-description {
+                font-size: 1rem;
+            }
+
+            .chat-modal {
+                width: 90%;
+                right: 5%;
+                left: 5%;
+            }
+        }
+
+        /* Overlay for mobile sidebar */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 50;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Mock data
+        const mockDevices = [
+            { id: 1, name: 'Internal SSD', type: 'storage', size: '512 GB', status: 'connected', model: 'Samsung 970 EVO Plus' },
+            { id: 2, name: 'External HDD', type: 'storage', size: '2 TB', status: 'connected', model: 'WD My Passport' },
+            { id: 3, name: 'USB Flash Drive', type: 'storage', size: '128 GB', status: 'connected', model: 'SanDisk Ultra Fit' },
+            { id: 4, name: 'MicroSD Card', type: 'storage', size: '256 GB', status: 'connected', model: 'Samsung EVO Select' }
+        ];
+
+        // Main App Component
+        function App() {
+            const [currentPage, setCurrentPage] = useState('welcome');
+            const [sidebarOpen, setSidebarOpen] = useState(false);
+            const [selectedDevices, setSelectedDevices] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [wipingProgress, setWipingProgress] = useState(0);
+            const [chatOpen, setChatOpen] = useState(false);
+            const [chatMessages, setChatMessages] = useState([
+                { id: 1, text: "Hello! I'm your Nullifyr assistant. How can I help you today?", sender: 'bot' }
+            ]);
+            const [chatInput, setChatInput] = useState('');
+            const [typing, setTyping] = useState(false);
+            const [scanning, setScanning] = useState(false);
+            const [devices, setDevices] = useState([]);
+            const chatMessagesRef = useRef(null);
+
+            useEffect(() => {
+                // Auto-scroll chat messages to bottom
+                if (chatMessagesRef.current) {
+                    chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+                }
+            }, [chatMessages]);
+
+            const handlePageChange = (page) => {
+                setCurrentPage(page);
+                setSidebarOpen(false);
+            };
+
+            const toggleSidebar = () => {
+                setSidebarOpen(!sidebarOpen);
+            };
+
+            const handleDeviceSelection = (deviceId) => {
+                setSelectedDevices(prev => {
+                    if (prev.includes(deviceId)) {
+                        return prev.filter(id => id !== deviceId);
+                    } else {
+                        return [...prev, deviceId];
+                    }
+                });
+            };
+
+            const handleStartScan = () => {
+                setScanning(true);
+                setDevices([]);
+                
+                // Simulate scanning devices one by one
+                let delay = 0;
+                mockDevices.forEach(device => {
+                    setTimeout(() => {
+                        setDevices(prev => [...prev, device]);
+                        
+                        // Mark scanning as complete when all devices are added
+                        if (mockDevices.length === 1) {
+                            setTimeout(() => setScanning(false), 500);
+                        }
+                    }, delay);
+                    delay += 800;
+                });
+            };
+
+            const handleStartWipe = () => {
+                setLoading(true);
+                // Simulate wipe progress
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 5;
+                    setWipingProgress(progress);
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        setLoading(false);
+                        handlePageChange('dashboard');
+                    }
+                }, 200);
+            };
+
+            const handleSendMessage = () => {
+                if (chatInput.trim() === '') return;
+                
+                // Add user message
+                const userMessage = {
+                    id: chatMessages.length + 1,
+                    text: chatInput,
+                    sender: 'user'
+                };
+                setChatMessages([...chatMessages, userMessage]);
+                setChatInput('');
+                setTyping(true);
+                
+                // Simulate bot response
+                setTimeout(() => {
+                    setTyping(false);
+                    let botResponse = getBotResponse(chatInput);
+                    setChatMessages(prev => [...prev, {
+                        id: prev.length + 1,
+                        text: botResponse,
+                        sender: 'bot'
+                    }]);
+                }, 1500);
+            };
+
+            const getBotResponse = (userInput) => {
+                const input = userInput.toLowerCase();
+                
+                if (input.includes('ssd') && input.includes('wipe')) {
+                    return "For SSDs, I recommend using the SSD Secure Erase method if available, or a 1-pass overwrite with verification. Avoid multiple passes as they can reduce SSD lifespan.";
+                } else if (input.includes('usb') && input.includes('method')) {
+                    return "For USB drives, the DoD 5220.22-M 3-pass method is excellent for security. For less sensitive data, a single pass with verification is usually sufficient.";
+                } else if (input.includes('progress') || input.includes('current wipe')) {
+                    return "I don't see any active wipe processes at the moment. You can start a new wipe from the Device Scan or Wipe Guidance sections.";
+                } else if (input.includes('verification')) {
+                    return "Verification is a crucial step that ensures data has been properly overwritten. Nullifyr uses sector-by-sector verification with cryptographic checksums to confirm complete data destruction.";
+                } else if (input.includes('hello') || input.includes('hi')) {
+                    return "Hello! I'm here to help with any questions about secure data wiping. What would you like to know?";
+                } else {
+                    return "I can help with questions about wiping methods, device-specific recommendations, verification processes, and troubleshooting. What specific information do you need?";
+                }
+            };
+
+            return (
+                <div className="app-container">
+                    <Sidebar 
+                        currentPage={currentPage} 
+                        onPageChange={handlePageChange}
+                        isOpen={sidebarOpen}
+                    />
+                    <div className="main-content">
+                        <Header 
+                            currentPage={currentPage}
+                            onMenuToggle={toggleSidebar}
+                        />
+                        <div className="content">
+                            {loading ? (
+                                <WipeProgress progress={wipingProgress} />
+                            ) : (
+                                <>
+                                    {currentPage === 'welcome' && <WelcomeScreen onGetStarted={() => handlePageChange('dashboard')} />}
+                                    {currentPage === 'dashboard' && <DashboardScreen />}
+                                    {currentPage === 'devices' && (
+                                        <DeviceSelectionScreen 
+                                            devices={devices}
+                                            scanning={scanning}
+                                            selectedDevices={selectedDevices}
+                                            onDeviceSelection={handleDeviceSelection}
+                                            onStartScan={handleStartScan}
+                                            onProceed={() => handlePageChange('advisor')}
+                                        />
+                                    )}
+                                    {currentPage === 'advisor' && (
+                                        <WipeAdvisorScreen 
+                                            selectedDevices={selectedDevices}
+                                            devices={devices}
+                                            onStartWipe={handleStartWipe}
+                                        />
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </div>
+                    <div className={`overlay ${sidebarOpen ? 'active' : ''}`} onClick={toggleSidebar}></div>
+                    
+                    {/* Chatbot */}
+                    <button className="chat-button" onClick={() => setChatOpen(!chatOpen)}>
+                        <span className="material-icons">chat</span>
+                    </button>
+                    
+                    <div className={`chat-modal ${chatOpen ? 'active' : ''}`}>
+                        <div className="chat-header">
+                            <div className="chat-title">Nullifyr Assistant</div>
+                            <button className="chat-close" onClick={() => setChatOpen(false)}>
+                                <span className="material-icons">close</span>
+                            </button>
+                        </div>
+                        <div className="chat-messages" ref={chatMessagesRef}>
+                            {chatMessages.map(message => (
+                                <div key={message.id} className={`chat-message ${message.sender}`}>
+                                    {message.text}
+                                </div>
+                            ))}
+                            {typing && (
+                                <div className="typing-indicator">
+                                    <div className="typing-dot"></div>
+                                    <div className="typing-dot"></div>
+                                    <div className="typing-dot"></div>
+                                </div>
+                            )}
+                        </div>
+                        <div className="chat-input-container">
+                            <input 
+                                type="text" 
+                                className="chat-input" 
+                                placeholder="Ask a question..."
+                                value={chatInput}
+                                onChange={(e) => setChatInput(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                            />
+                            <button className="chat-send" onClick={handleSendMessage}>
+                                <span className="material-icons">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Sidebar Component
+        function Sidebar({ currentPage, onPageChange, isOpen }) {
+            return (
+                <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+                    <div className="sidebar-header">
+                        <div className="logo">N</div>
+                        <div className="app-name">Nullifyr</div>
+                    </div>
+                    <nav className="nav-menu">
+                        <div 
+                            className={`nav-item ${currentPage === 'dashboard' ? 'active' : ''}`}
+                            onClick={() => onPageChange('dashboard')}
+                        >
+                            <span className="material-icons">dashboard</span>
+                            <span>Home</span>
+                        </div>
+                        <div 
+                            className={`nav-item ${currentPage === 'devices' ? 'active' : ''}`}
+                            onClick={() => onPageChange('devices')}
+                        >
+                            <span className="material-icons">storage</span>
+                            <span>Devices</span>
+                        </div>
+                        <div 
+                            className={`nav-item ${currentPage === 'advisor' ? 'active' : ''}`}
+                            onClick={() => onPageChange('advisor')}
+                        >
+                            <span className="material-icons">security</span>
+                            <span>Wipe Guidance</span>
+                        </div>
+                        <div 
+                            className={`nav-item ${currentPage === 'settings' ? 'active' : ''}`}
+                            onClick={() => onPageChange('settings')}
+                        >
+                            <span className="material-icons">settings</span>
+                            <span>Settings</span>
+                        </div>
+                    </nav>
+                </div>
+            );
+        }
+
+        // Header Component
+        function Header({ currentPage, onMenuToggle }) {
+            const getPageTitle = () => {
+                switch(currentPage) {
+                    case 'welcome': return 'Welcome';
+                    case 'dashboard': return 'Home Overview';
+                    case 'devices': return 'Device Selection';
+                    case 'advisor': return 'Wipe Guidance';
+                    case 'settings': return 'Settings';
+                    default: return 'Nullifyr';
+                }
+            };
+
+            return (
+                <header className="header">
+                    <button className="menu-toggle" onClick={onMenuToggle}>
+                        <span className="material-icons">menu</span>
+                    </button>
+                    <h1 className="page-title">{getPageTitle()}</h1>
+                    <div className="header-actions">
+                        <button className="icon-button" title="Notifications">
+                            <span className="material-icons">notifications</span>
+                        </button>
+                        <button className="icon-button" title="Help">
+                            <span className="material-icons">help_outline</span>
+                        </button>
+                    </div>
+                </header>
+            );
+        }
+
+        // Welcome Screen Component
+        function WelcomeScreen({ onGetStarted }) {
+            return (
+                <div className="welcome-container">
+                    <div className="welcome-logo">N</div>
+                    <h1 className="welcome-title">Nullifyr</h1>
+                    <p className="welcome-description">
+                        Professional-grade data wiping solution that ensures complete, secure, and permanent deletion of sensitive information from your storage devices.
+                    </p>
+                    <button className="btn btn-primary" onClick={onGetStarted}>
+                        <span className="material-icons">arrow_forward</span>
+                        Get Started
+                    </button>
+                </div>
+            );
+        }
+
+        // Dashboard Screen Component
+        function DashboardScreen() {
+            return (
+                <div>
+                    <div className="dashboard-grid">
+                        <div className="card">
+                            <div className="card-header">
+                                <div className="card-icon" style={{ background: 'linear-gradient(135deg, var(--primary-color), var(--primary-dark))' }}>
+                                    <span className="material-icons">storage</span>
+                                </div>
+                                <div className="card-title">Connected Devices</div>
+                            </div>
+                            <div className="card-content">
+                                <div className="card-value">4</div>
+                                <div className="status-indicator status-success">
+                                    <span className="material-icons" style={{ fontSize: '16px' }}>check_circle</span>
+                                    All devices ready
+                                </div>
+                            </div>
+                        </div>
+                        <div className="card">
+                            <div className="card-header">
+                                <div className="card-icon" style={{ background: 'linear-gradient(135deg, var(--secondary-color), var(--secondary-dark))' }}>
+                                    <span className="material-icons">verified</span>
+                                </div>
+                                <div className="card-title">Completed Wipes</div>
+                            </div>
+                            <div className="card-content">
+                                <div className="card-value">12</div>
+                                <div className="status-indicator status-success">
+                                    <span className="material-icons" style={{ fontSize: '16px' }}>check_circle</span>
+                                    All successful
+                                </div>
+                            </div>
+                        </div>
+                        <div className="card">
+                            <div className="card-header">
+                                <div className="card-icon" style={{ background: 'linear-gradient(135deg, var(--warning-color), #ff6f00)' }}>
+                                    <span className="material-icons">warning</span>
+                                </div>
+                                <div className="card-title">System Health</div>
+                            </div>
+                            <div className="card-content">
+                                <div className="card-value">Good</div>
+                                <div className="status-indicator status-warning">
+                                    <span className="material-icons" style={{ fontSize: '16px' }}>info</span>
+                                    Update available
+                                </div>
+                            </div>
+                        </div>
+                        <div className="card">
+                            <div className="card-header">
+                                <div className="card-icon" style={{ background: 'linear-gradient(135deg, var(--accent-color), #00c853)' }}>
+                                    <span className="material-icons">security</span>
+                                </div>
+                                <div className="card-title">Security Status</div>
+                            </div>
+                            <div className="card-content">
+                                <div className="card-value">Secure</div>
+                                <div className="status-indicator status-success">
+                                    <span className="material-icons" style={{ fontSize: '16px' }}>shield</span>
+                                    All protections active
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="dashboard-grid">
+                        <div className="card">
+                            <div className="card-header">
+                                <div className="card-icon" style={{ background: 'linear-gradient(135deg, var(--primary-color), var(--primary-dark))' }}>
+                                    <span className="material-icons">speed</span>
+                                </div>
+                                <div className="card-title">Quick Actions</div>
+                            </div>
+                            <div className="card-content">
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                                        <span className="material-icons">add</span>
+                                        Select Devices
+                                    </button>
+                                    <button className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                                        <span className="material-icons">history</span>
+                                        View History
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="card">
+                            <div className="card-header">
+                                <div className="card-icon" style={{ background: 'linear-gradient(135deg, var(--secondary-color), var(--secondary-dark))' }}>
+                                    <span className="material-icons">insights</span>
+                                </div>
+                                <div className="card-title">Recent Activity</div>
+                            </div>
+                            <div className="card-content">
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span>SSD Wipe Complete</span>
+                                        <span style={{ color: 'var(--text-secondary)' }}>2 hours ago</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span>USB Drive Wiped</span>
+                                        <span style={{ color: 'var(--text-secondary)' }}>Yesterday</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span>HDD Wipe Complete</span>
+                                        <span style={{ color: 'var(--text-secondary)' }}>3 days ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Device Selection Screen Component
+        function DeviceSelectionScreen({ devices, scanning, selectedDevices, onDeviceSelection, onStartScan, onProceed }) {
+            return (
+                <div>
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <h2 style={{ marginBottom: '0.5rem' }}>Device Selection</h2>
+                        <p style={{ color: 'var(--text-secondary)' }}>
+                            Click "Start Device Scan" to detect connected devices, then select devices for wiping.
+                        </p>
+                    </div>
+                    
+                    {devices.length === 0 && (
+                        <div className="scan-button-container">
+                            <button 
+                                className="scan-button" 
+                                onClick={onStartScan}
+                                disabled={scanning}
+                            >
+                                <span className="material-icons">search</span>
+                                {scanning ? 'Scanning...' : 'Start Device Scan'}
+                            </button>
+                        </div>
+                    )}
+                    
+                    {scanning && (
+                        <div className="loading-container">
+                            <div className="spinner"></div>
+                            <p className="loading-text">Scanning for devices...</p>
+                        </div>
+                    )}
+                    
+                    {devices.length > 0 && (
+                        <>
+                            <div className="device-list">
+                                {devices.map(device => (
+                                    <div 
+                                        key={device.id}
+                                        className={`device-card ${selectedDevices.includes(device.id) ? 'selected' : ''}`}
+                                        onClick={() => onDeviceSelection(device.id)}
+                                    >
+                                        {selectedDevices.includes(device.id) && (
+                                            <span className="material-icons selected-check">check</span>
+                                        )}
+                                        <div className="device-icon">
+                                            <span className="material-icons">storage</span>
+                                        </div>
+                                        <div className="device-info">
+                                            <div className="device-name">{device.name}</div>
+                                            <div className="device-details">{device.model} • {device.size}</div>
+                                            <div className="device-status">Connected</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
+                                <button 
+                                    className="btn btn-secondary" 
+                                    onClick={onStartScan}
+                                    disabled={scanning}
+                                >
+                                    <span className="material-icons">refresh</span>
+                                    Rescan Devices
+                                </button>
+                                <button 
+                                    className="btn btn-primary" 
+                                    onClick={onProceed}
+                                    disabled={selectedDevices.length === 0}
+                                >
+                                    <span className="material-icons">arrow_forward</span>
+                                    Continue ({selectedDevices.length} selected)
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+        }
+
+        // Wipe Advisor Screen Component
+        function WipeAdvisorScreen({ selectedDevices, devices, onStartWipe }) {
+            const selectedDeviceObjects = devices.filter(device => selectedDevices.includes(device.id));
+            
+            return (
+                <div className="advisor-container">
+                    <div className="risk-score">
+                        <h2>Risk Assessment</h2>
+                        <div className="score-circle">
+                            <div className="score-inner">
+                                <div className="score-value">75</div>
+                                <div className="score-label">Medium Risk</div>
+                            </div>
+                        </div>
+                        <p style={{ color: 'var(--text-secondary)' }}>
+                            Based on device type and data sensitivity, we recommend a 3-pass wipe with verification.
+                        </p>
+                        <div className="progress-container">
+                            <div className="progress-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <div className="recommendations">
+                        <h2>Wipe Recommendations</h2>
+                        <div className="recommendation-item">
+                            <span className="material-icons recommendation-icon">check_circle</span>
+                            <div>
+                                <h3>Method: DoD 5220.22-M</h3>
+                                <p style={{ color: 'var(--text-secondary)' }}>
+                                    3-pass overwrite with verification. Meets Department of Defense standards.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="recommendation-item">
+                            <span className="material-icons recommendation-icon">check_circle</span>
+                            <div>
+                                <h3>Verification: Enabled</h3>
+                                <p style={{ color: 'var(--text-secondary)' }}>
+                                    Post-wipe verification ensures all data has been successfully overwritten.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="recommendation-item">
+                            <span className="material-icons recommendation-icon">info</span>
+                            <div>
+                                <h3>Estimated Time: 2-3 hours</h3>
+                                <p style={{ color: 'var(--text-secondary)' }}>
+                                    Based on total storage capacity of selected devices.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div style={{ marginTop: '2rem' }}>
+                            <h3>Selected Devices:</h3>
+                            <ul style={{ listStyle: 'none', marginTop: '1rem' }}>
+                                {selectedDeviceObjects.map(device => (
+                                    <li key={device.id} style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <span className="material-icons" style={{ fontSize: '18px', color: 'var(--primary-color)' }}>storage</span>
+                                        {device.name} - {device.size}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        
+                        <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button className="btn btn-primary" onClick={onStartWipe}>
+                                <span className="material-icons">security</span>
+                                Start Wipe Process
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Wipe Progress Component
+        function WipeProgress({ progress }) {
+            return (
+                <div className="loading-container">
+                    <div className="spinner"></div>
+                    <h2 style={{ margin: '1rem 0' }}>Wiping in Progress</h2>
+                    <div className="progress-container" style={{ width: '300px' }}>
+                        <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+                    </div>
+                    <p className="loading-text">{progress}% Complete</p>
+                    <p style={{ color: 'var(--text-secondary)', marginTop: '1rem' }}>Please do not disconnect your devices</p>
+                </div>
+            );
+        }
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
