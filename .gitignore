@@ -1,0 +1,20 @@
+# Ignore Rust build artifacts
+/target/
+**/*.rs.bk
+# Ignore node_modules and other common folders
+node_modules/
+# Ignore OS files
+.DS_Store
+Thumbs.db
+# Ignore log files
+*.log
+# Ignore IDE/editor folders
+.vscode/
+.idea/
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+# Ignore environment files
+.env
