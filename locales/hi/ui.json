@@ -1,0 +1,7 @@
+{
+  "device_error_size_zero": "डिवाइस {id} का आकार 0 है या आकार पढ़ने में विफल।",
+  "device_error_generic": "डिवाइस {id} ({model}) का पता लगाने में त्रुटि।",
+  "device_error_permission": "डिवाइस {id} तक पहुँचने में अनुमति अस्वीकृत।",
+  "device_error_not_found": "डिवाइस {id} नहीं मिला।",
+  "device_error_unknown": "डिवाइस {id} के लिए अज्ञात त्रुटि हुई।"
+}

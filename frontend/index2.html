@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nullifyr - Professional Data Wiping Solution</title>
+    <title>SecureWipe - Professional Data Wiping Solution</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -1074,7 +1074,7 @@
             const [wipingProgress, setWipingProgress] = useState(0);
             const [chatOpen, setChatOpen] = useState(false);
             const [chatMessages, setChatMessages] = useState([
-                { id: 1, text: "Hello! I'm your Nullifyr assistant. How can I help you today?", sender: 'bot' }
+                { id: 1, text: "Hello! I'm your SecureWipe assistant. How can I help you today?", sender: 'bot' }
             ]);
             const [chatInput, setChatInput] = useState('');
             const [typing, setTyping] = useState(false);
@@ -1177,7 +1177,7 @@
                 } else if (input.includes('progress') || input.includes('current wipe')) {
                     return "I don't see any active wipe processes at the moment. You can start a new wipe from the Device Scan or Wipe Guidance sections.";
                 } else if (input.includes('verification')) {
-                    return "Verification is a crucial step that ensures data has been properly overwritten. Nullifyr uses sector-by-sector verification with cryptographic checksums to confirm complete data destruction.";
+                    return "Verification is a crucial step that ensures data has been properly overwritten. SecureWipe uses sector-by-sector verification with cryptographic checksums to confirm complete data destruction.";
                 } else if (input.includes('hello') || input.includes('hi')) {
                     return "Hello! I'm here to help with any questions about secure data wiping. What would you like to know?";
                 } else {
@@ -1234,7 +1234,7 @@
                     
                     <div className={`chat-modal ${chatOpen ? 'active' : ''}`}>
                         <div className="chat-header">
-                            <div className="chat-title">Nullifyr Assistant</div>
+                            <div className="chat-title">SecureWipe Assistant</div>
                             <button className="chat-close" onClick={() => setChatOpen(false)}>
                                 <span className="material-icons">close</span>
                             </button>
@@ -1276,8 +1276,8 @@
             return (
                 <div className={`sidebar ${isOpen ? 'open' : ''}`}>
                     <div className="sidebar-header">
-                        <div className="logo">N</div>
-                        <div className="app-name">Nullifyr</div>
+                        <div className="logo">S</div>
+                        <div className="app-name">SecureWipe</div>
                     </div>
                     <nav className="nav-menu">
                         <div 
@@ -1322,7 +1322,7 @@
                     case 'devices': return 'Device Selection';
                     case 'advisor': return 'Wipe Guidance';
                     case 'settings': return 'Settings';
-                    default: return 'Nullifyr';
+                    default: return 'SecureWipe';
                 }
             };
 
@@ -1348,8 +1348,8 @@
         function WelcomeScreen({ onGetStarted }) {
             return (
                 <div className="welcome-container">
-                    <div className="welcome-logo">N</div>
-                    <h1 className="welcome-title">Nullifyr</h1>
+                    <div className="welcome-logo">S</div>
+                    <h1 className="welcome-title">SecureWipe</h1>
                     <p className="welcome-description">
                         Professional-grade data wiping solution that ensures complete, secure, and permanent deletion of sensitive information from your storage devices.
                     </p>

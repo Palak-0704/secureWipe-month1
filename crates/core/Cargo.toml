@@ -20,11 +20,21 @@ log = "0.4"
 simplelog = "0.12"
 sysinfo = "0.30"
 winapi = { version = "0.3", features = ["winbase", "fileapi"] }
+tower-http = { version = "0.4.4", features = ["cors"] }
+dotenvy = "0.15"
+regex = "1"
+lazy_static = "1.4"
 
 [features]
+
 real_scan = []
 real_erase = []
+groq_api = []
 
 [[bin]]
 name = "chatbot_cli"
 path = "src/chatbot_cli.rs"
+
+[[bin]]
+name = "main_api"
+path = "src/main_api.rs"

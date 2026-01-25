@@ -1,0 +1,7 @@
+{
+  "device_error_size_zero": "Device {id} has size 0 or failed to parse size.",
+  "device_error_generic": "Error detecting device {id} ({model}).",
+  "device_error_permission": "Permission denied while accessing device {id}.",
+  "device_error_not_found": "Device {id} not found.",
+  "device_error_unknown": "Unknown error occurred for device {id}."
+}

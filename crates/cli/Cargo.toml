@@ -12,3 +12,9 @@ anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha2 = "0.10"
+simplelog = "0.12"
+log = "0.4"
+tokio = { version = "1.36", features = ["full"] }
+
+[features]
+groq_api = ["securewipe-core/groq_api"]

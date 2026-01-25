@@ -3,3 +3,8 @@ members = [
     "crates/core",
     "crates/cli"
 ]
+
+resolver = "2"
+
+[workspace.dependencies]
+securewipe-core = { path = "crates/core", features = ["groq_api"] }
