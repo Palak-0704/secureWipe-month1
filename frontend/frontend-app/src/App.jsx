@@ -13,6 +13,12 @@ import 'material-design-icons-iconfont/dist/material-design-icons.css';
 
 
 function App() {
+  // All state and ref declarations must come first
+  const [history, setHistory] = useState([]);
+  const [systemHealth, setSystemHealth] = useState({ health: '...', update_available: false });
+  const [securityStatus, setSecurityStatus] = useState({ status: '...', protections_active: false });
+  const [scannedOnce, setScannedOnce] = useState(false);
+  const [dashboardLoading, setDashboardLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState('welcome');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedDevices, setSelectedDevices] = useState([]);
@@ -28,56 +34,12 @@ function App() {
   const [devices, setDevices] = useState([]);
   const chatMessagesRef = useRef(null);
 
+  // Scroll chat to bottom when messages change
   useEffect(() => {
     if (chatMessagesRef.current) {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
     }
-  }, [chatMessages]);
-
-  // Fetch devices from backend
-  const fetchDevices = async () => {
-    try {
-      const res = await fetch('http://127.0.0.1:8080/api/devices');
-      if (!res.ok) throw new Error('Failed to fetch devices');
-      const data = await res.json();
-      setDevices(data);
-    } catch (e) {
-      setDevices([]);
-      console.error('Device fetch failed:', e);
-    }
-  };
-
-  // Fetch devices when opening dashboard only
-  useEffect(() => {
-    if (currentPage === 'dashboard') {
-      fetchDevices();
-    }
-    if (currentPage === 'devices') {
-      setDevices([]); // Clear device list when entering device selection
-    }
-  }, [currentPage]);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    setSidebarOpen(false);
-  };
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  const handleDeviceSelection = (deviceId) => {
-    setSelectedDevices(prev =>
-      prev.includes(deviceId) ? prev.filter(id => id !== deviceId) : [...prev, deviceId]
-    );
-  };
-
-  const handleStartScan = async () => {
-    setScanning(true);
-    await fetchDevices();
-    setScanning(false);
-  };
-
+  }, [chatMessages, typing]);
   const handleStartWipe = async () => {
     setLoading(true);
     setWipingProgress(0);
@@ -96,7 +58,12 @@ function App() {
         if (progress >= 100) {
           clearInterval(interval);
           setLoading(false);
-          handlePageChange('dashboard');
+          // Always fetch latest dashboard/device data from backend after wipe
+          fetchDashboardData().then(() => {
+            setSelectedDevices([]); // Reset selected devices after wipe
+            setScannedOnce(true);
+            setCurrentPage('dashboard');
+          });
         }
       }, 200);
     } catch (e) {
@@ -104,65 +71,95 @@ function App() {
       alert('Failed to start wipe: ' + e);
     }
   };
+  // Fetch all dashboard data from backend
+  const fetchDashboardData = async () => {
+    setDashboardLoading(true);
+    try {
+      const [devRes, histRes, healthRes, secRes] = await Promise.all([
+        fetch('http://127.0.0.1:8080/api/devices'),
+        fetch('http://127.0.0.1:8080/api/wipe/history'),
+        fetch('http://127.0.0.1:8080/api/system/health'),
+        fetch('http://127.0.0.1:8080/api/system/security'),
+      ]);
+      setDevices(devRes.ok ? await devRes.json() : []);
+      setHistory(histRes.ok ? await histRes.json() : []);
+      setSystemHealth(healthRes.ok ? await healthRes.json() : { health: 'Unknown', update_available: false });
+      setSecurityStatus(secRes.ok ? await secRes.json() : { status: 'Unknown', protections_active: false });
+    } catch (e) {
+      setDevices([]);
+      setHistory([]);
+      setSystemHealth({ health: 'Unknown', update_available: false });
+      setSecurityStatus({ status: 'Unknown', protections_active: false });
+      console.error('Dashboard data fetch failed:', e);
+    } finally {
+      setDashboardLoading(false);
+    }
+  };
 
-  // Advisor integration: fetch recommendation when entering advisor page
-  const [advisor, setAdvisor] = useState(null);
-  const [compliance, setCompliance] = useState('');
-  useEffect(() => {
-    const fetchAdvisor = async () => {
-      if (currentPage === 'advisor' && selectedDevices.length > 0) {
-        try {
-          const res = await fetch('http://127.0.0.1:8080/api/advisor/recommend', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ device_ids: selectedDevices, compliance })
-          });
-          const data = await res.json();
-          setAdvisor(data);
-        } catch (e) {
-          setAdvisor({ recommendation: 'unknown', rationale: 'Error contacting advisor' });
-        }
-      } else {
-        setAdvisor(null);
-      }
-    };
-    fetchAdvisor();
-  }, [currentPage, selectedDevices, compliance]);
+  const handleStartScan = async () => {
+    setScanning(true);
+    // Log scan event to backend FIRST
+    try {
+      await fetch('http://127.0.0.1:8080/api/scan/log', { method: 'POST' });
+    } catch (e) {
+      // Ignore scan log errors
+    }
+    // Now fetch dashboard/device data
+    if (typeof fetchDashboardData === 'function') {
+      await fetchDashboardData();
+    }
+    setScanning(false);
+    if (typeof setScannedOnce === 'function') setScannedOnce(true);
+  };
+
+  const handleDeviceSelection = (deviceId) => {
+    setSelectedDevices(prev =>
+      prev.includes(deviceId) ? prev.filter(id => id !== deviceId) : [...prev, deviceId]
+    );
+  };
 
   const handleSendMessage = async () => {
-    if (chatInput.trim() === '') return;
-    const userMessage = {
-      id: chatMessages.length + 1,
-      text: chatInput,
-      sender: 'user'
-    };
-    setChatMessages([...chatMessages, userMessage]);
+    if (!chatInput.trim()) return;
+    setChatMessages(prev => [
+      ...prev,
+      { id: prev.length + 1, text: chatInput, sender: 'user' }
+    ]);
     setChatInput('');
     setTyping(true);
     try {
       const res = await fetch('http://127.0.0.1:8080/api/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: chatInput, concise: true })
+        body: JSON.stringify({ message: chatInput })
       });
       const data = await res.json();
-      setTyping(false);
-      setChatMessages(prev => [...prev, {
-        id: prev.length + 1,
-        text: data.reply || '[No response]',
-        sender: 'bot'
-      }]);
+      setChatMessages(prev => [
+        ...prev,
+        { id: prev.length + 1, text: data.reply || '[No response]', sender: 'bot' }
+      ]);
     } catch (e) {
+      setChatMessages(prev => [
+        ...prev,
+        { id: prev.length + 1, text: '[Error: Could not reach chatbot]', sender: 'bot' }
+      ]);
+    } finally {
       setTyping(false);
-      setChatMessages(prev => [...prev, {
-        id: prev.length + 1,
-        text: '[Error contacting chatbot]',
-        sender: 'bot'
-      }]);
     }
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    setSidebarOpen(false);
+  };
+  // (Removed duplicate state and ref declarations)
+
+  // ...other state and hooks...
+
+  // Place the correct useEffect for advisor fetching here if needed, and all other hooks
 
   return (
     <div className="app-container">
@@ -181,8 +178,18 @@ function App() {
             <WipeProgress progress={wipingProgress} />
           ) : (
             <>
-              {currentPage === 'welcome' && <WelcomeScreen onGetStarted={() => handlePageChange('dashboard')} />}
-              {currentPage === 'dashboard' && <DashboardScreen devices={devices} />}
+              {currentPage === 'welcome' && <WelcomeScreen onGetStarted={() => handlePageChange('devices')} />}
+              {currentPage === 'dashboard' && (
+                <DashboardScreen
+                  key={history.length > 0 ? `${history.length}-${history[history.length-1].timestamp}` : 'empty'}
+                  devices={devices}
+                  history={history}
+                  systemHealth={systemHealth}
+                  securityStatus={securityStatus}
+                  scanning={scanning}
+                  scannedOnce={scannedOnce}
+                />
+              )}
               {currentPage === 'devices' && (
                 <DeviceSelectionScreen 
                   devices={devices}

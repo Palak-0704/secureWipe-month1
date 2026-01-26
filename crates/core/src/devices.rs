@@ -18,7 +18,9 @@ pub fn get_current_device_state() -> Result<Vec<Device>, String> {
         log::error!("Device state mutex poisoned: {}", e);
         "Device state unavailable".to_string()
     })?;
-    Ok(guard.clone())
+    let devices = guard.clone();
+    println!("[DEBUG] Detected devices: {:#?}", devices);
+    Ok(devices)
 }
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use std::sync::{Arc, Mutex};
