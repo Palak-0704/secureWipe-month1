@@ -24,6 +24,7 @@ node_modules/
 Thumbs.db
 # Ignore log files
 *.log
+build_output.txt
 # Ignore IDE/editor folders
 .vscode/
 .idea/
@@ -34,3 +35,11 @@ __pycache__/
 *.pyd
 # Ignore environment files
 .env
+
+# Runtime/generated wipe artifacts
+crates/core/data/confirmations/*.json
+crates/core/data/wipe_sessions/*.json
+crates/core/data/offline_results/*.json
+
+# Generated local inventory snapshots
+structure.txt
