@@ -1,14 +1,13 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 
-function DashboardScreen({ devices = [], history = [], systemHealth = { health: '...', update_available: false }, securityStatus = { status: '...', protections_active: false }, scanning = false, scannedOnce = false }) {
+function DashboardScreen({ devices = [], history = [], systemHealth = { health: '...', update_available: false }, securityStatus = { status: '...', protections_active: false }, scannedOnce = false, onPageChange }) {
   // If scan never performed, always show zero/empty
   const scanned = scannedOnce && devices && Array.isArray(devices) && devices.length > 0;
   const deviceCount = scannedOnce ? (devices.length || 0) : 0;
   // Find the timestamp of the most recent scan after opening the dashboard
   const lastScanIdx = history.map(e => e.explanation && e.explanation.toLowerCase().includes('scan')).lastIndexOf(true);
-  const lastScanTime = lastScanIdx !== -1 ? new Date(history[lastScanIdx].timestamp) : null;
   // Include the most recent scan event itself in sessionHistory
   let sessionHistory = [];
   if (lastScanIdx !== -1) {
@@ -106,11 +105,11 @@ function DashboardScreen({ devices = [], history = [], systemHealth = { health: 
           </div>
           <div className="card-content">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+              <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => onPageChange && onPageChange('devices')}>
                 <span className="material-icons">add</span>
                 Select Devices
               </button>
-              <button className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+              <button className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => onPageChange && onPageChange('offline')}>
                 <span className="material-icons">history</span>
                 View History
               </button>

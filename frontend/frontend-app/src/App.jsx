@@ -6,6 +6,9 @@ import DashboardScreen from './components/DashboardScreen';
 import DeviceSelectionScreen from './components/DeviceSelectionScreen';
 import WipeAdvisorScreen from './components/WipeAdvisorScreen';
 import WipeProgress from './components/WipeProgress';
+import OfflineSessionScreen from './components/OfflineSessionScreen';
+import CertificateCenterScreen from './components/CertificateCenterScreen';
+import SettingsScreen from './components/SettingsScreen';
 import './App.css';
 import 'material-design-icons-iconfont/dist/material-design-icons.css';
 
@@ -18,7 +21,7 @@ function App() {
   const [systemHealth, setSystemHealth] = useState({ health: '...', update_available: false });
   const [securityStatus, setSecurityStatus] = useState({ status: '...', protections_active: false });
   const [scannedOnce, setScannedOnce] = useState(false);
-  const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [, setDashboardLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState('welcome');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedDevices, setSelectedDevices] = useState([]);
@@ -32,6 +35,7 @@ function App() {
   const [typing, setTyping] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [devices, setDevices] = useState([]);
+  const [offlineInitialTargetId, setOfflineInitialTargetId] = useState('');
   const chatMessagesRef = useRef(null);
 
   // Scroll chat to bottom when messages change
@@ -40,6 +44,11 @@ function App() {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
     }
   }, [chatMessages, typing]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
   const handleStartWipe = async () => {
     setLoading(true);
     setWipingProgress(0);
@@ -101,7 +110,7 @@ function App() {
     // Log scan event to backend FIRST
     try {
       await fetch('http://127.0.0.1:8080/api/scan/log', { method: 'POST' });
-    } catch (e) {
+    } catch {
       // Ignore scan log errors
     }
     // Now fetch dashboard/device data
@@ -137,7 +146,7 @@ function App() {
         ...prev,
         { id: prev.length + 1, text: data.reply || '[No response]', sender: 'bot' }
       ]);
-    } catch (e) {
+    } catch {
       setChatMessages(prev => [
         ...prev,
         { id: prev.length + 1, text: '[Error: Could not reach chatbot]', sender: 'bot' }
@@ -154,6 +163,12 @@ function App() {
   const handlePageChange = (page) => {
     setCurrentPage(page);
     setSidebarOpen(false);
+  };
+
+  const handleStartOfflineFlow = () => {
+    const firstSelected = selectedDevices[0] || '';
+    setOfflineInitialTargetId(firstSelected);
+    handlePageChange('offline');
   };
   // (Removed duplicate state and ref declarations)
 
@@ -188,6 +203,7 @@ function App() {
                   securityStatus={securityStatus}
                   scanning={scanning}
                   scannedOnce={scannedOnce}
+                  onPageChange={handlePageChange}
                 />
               )}
               {currentPage === 'devices' && (
@@ -205,7 +221,21 @@ function App() {
                   selectedDevices={selectedDevices}
                   devices={devices}
                   onStartWipe={handleStartWipe}
+                  onStartOfflineSession={handleStartOfflineFlow}
                 />
+              )}
+              {currentPage === 'offline' && (
+                <OfflineSessionScreen
+                  devices={devices}
+                  initialTargetDeviceId={offlineInitialTargetId}
+                  onDataChanged={fetchDashboardData}
+                />
+              )}
+              {currentPage === 'certificates' && (
+                <CertificateCenterScreen />
+              )}
+              {currentPage === 'settings' && (
+                <SettingsScreen />
               )}
             </>
           )}

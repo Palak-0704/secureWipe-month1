@@ -7,6 +7,8 @@ function Header({ currentPage, onMenuToggle }) {
       case 'dashboard': return 'Home Overview';
       case 'devices': return 'Device Selection';
       case 'advisor': return 'Wipe Guidance';
+      case 'offline': return 'Offline Sessions';
+      case 'certificates': return 'Certificates';
       case 'settings': return 'Settings';
       default: return 'SecureWipe';
     }

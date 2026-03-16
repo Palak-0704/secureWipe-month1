@@ -6,7 +6,7 @@ const COMPLIANCES = [
   { label: 'NIST', value: 'NIST' },
 ];
 
-function WipeAdvisorScreen({ selectedDevices, devices, onStartWipe }) {
+function WipeAdvisorScreen({ selectedDevices, devices, onStartWipe, onStartOfflineSession }) {
   const [advisors, setAdvisors] = useState({});
   useEffect(() => {
     async function fetchAll() {
@@ -26,8 +26,7 @@ function WipeAdvisorScreen({ selectedDevices, devices, onStartWipe }) {
   }, [selectedDevices]);
 
   const selectedDeviceObjects = devices.filter(device => selectedDevices.includes(device.id));
-  const totalStorage = selectedDeviceObjects.reduce((sum, d) => d.size_gb ? sum + d.size_gb : sum, 0);
-
+  const offlineEligible = selectedDeviceObjects.length === 1;
   return (
     <div className="advisor-container">
       <div className="risk-score">
@@ -200,16 +199,32 @@ function WipeAdvisorScreen({ selectedDevices, devices, onStartWipe }) {
         </div>
 
         {/* Start Wipe Button */}
-        <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
-          <button
-            className="btn btn-primary"
-            onClick={onStartWipe}
-            disabled={selectedDeviceObjects.length === 0}
-            style={selectedDeviceObjects.length === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-          >
-            <span className="material-icons">security</span>
-            Start Wipe Process
-          </button>
+        <div style={{ marginTop: '2rem' }}>
+          {selectedDeviceObjects.length > 1 && (
+            <div style={{ color: 'var(--warning-color)', fontSize: '0.88em', marginBottom: '0.75rem' }}>
+              Offline handoff works one target at a time. Keep a single device selected to open the offline session wizard.
+            </div>
+          )}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={onStartOfflineSession}
+              disabled={!offlineEligible}
+              style={!offlineEligible ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+            >
+              <span className="material-icons">offline_bolt</span>
+              Open Offline Flow
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={onStartWipe}
+              disabled={selectedDeviceObjects.length === 0}
+              style={selectedDeviceObjects.length === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+            >
+              <span className="material-icons">security</span>
+              Start Wipe Process
+            </button>
+          </div>
         </div>
       </div>
     </div>
