@@ -1,7 +1,7 @@
 
 # Topic: Research and Implementation of Device Detection and Wipe Methods
 
-# Device Detection and Wipe Methods: In-Depth Research Summary
+# Device Detection and Wipe Methods:  Research Summary
 
 ## Introduction
 

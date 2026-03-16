@@ -84,6 +84,7 @@ Month1-Submission/
 - All user/device feedback and logs are stored in `data/` (CSV/JSON)
 - Use these for analytics, model training, or audit proof
 - Example: See `data/feedback_history.csv` and `data/feedback_history.json` for real feedback and recommendations dataset.
+- Runtime storage root is configurable through `SECUREWIPE_DATA_DIR`, which is useful for isolated lab runs, tests, and deployments that should not write into the repository working tree.
 
 ---
 
@@ -92,6 +93,33 @@ Month1-Submission/
 - `docs/` contains safety, consent, architecture, and wireframes
 - `PROGRESS_REPORT.md` tracks completed and pending tasks
 - All research and design decisions are documented in `frontend/README.md`
+- API contract: `docs/OPENAPI.yaml`
+- Runtime split and data-flow overview: `docs/ARCHITECTURE.md`
+- Safety posture and compatibility notes: `docs/COMPATIBILITY_AND_SAFETY.md`
+- Local data-handling guidance: `docs/PRIVACY_AND_SECURITY.md`
+- Security reporting process: `docs/VULNERABILITY_DISCLOSURE.md`
+- Metrics/logs/alerts rollout guide: `docs/OBSERVABILITY_PLAN.md`
+- Secrets response checklist: `docs/SECRETS_ROTATION_PLAYBOOK.md`
+
+---
+
+## 📦 Release Artifacts And Checksums
+
+- CI now packages the current CLI release artifact together with core operational docs.
+- CI also generates a `SHA256SUMS` manifest for the packaged files.
+- Local checksum generation scripts are available at:
+	- `scripts/generate_checksums.sh`
+	- `scripts/generate_checksums.ps1`
+
+Example local usage:
+
+```bash
+bash scripts/generate_checksums.sh release-artifacts
+```
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\generate_checksums.ps1 .\release-artifacts
+```
 
 ---
 
@@ -104,6 +132,68 @@ Month1-Submission/
 	3. Complete consent and mentor sign-off (see `docs/SAFETY.md`)
 - **Audit Logging:** All actions (simulated or real) are logged in detail for compliance and troubleshooting.
 - **Emergency Stop:** Immediate halt of all operations is supported (see docs for details).
+
+---
+
+## 🚨 AI Anomaly Detector (Offline Wipe)
+
+SecureWipe includes an anomaly detector in the offline ingest and certificate review pipeline.
+
+### What It Monitors
+- Consistency between `verification_passed` and `completion_status`
+- Suspicious keywords in verification notes for verified results (for example: anomaly, error, mismatch, tamper)
+- Verified evidence quality checks, including minimum sampled blocks and operator identity presence
+
+### Pause-and-Alert Behavior
+- If anomalies are detected during `POST /api/offline/result/ingest`, the operation is paused for manual review.
+- The API returns HTTP `409` with code:
+	- `offline_wipe_anomaly_detected`
+- Session state is moved to a manual review path:
+	- `phase = failed`
+	- `resume_hint = manual_anomaly_review_required`
+- An audit event is written to history with phase:
+	- `offline_result_anomaly_paused`
+
+### Certificate Impact
+- Certificate review includes anomaly messages in `issues`.
+- `certificate_eligible` is automatically set to `false` if anomaly alerts exist.
+
+### Operator Guidance
+1. Inspect the anomaly message returned by ingest.
+2. Review offline artifacts and verification notes.
+3. Correct evidence/notes and re-run controlled validation before certificate distribution.
+
+---
+
+## 🔌 Real USB Provisioning (Offline Handoff)
+
+`POST /api/usb/prepare` now supports two provisioning modes:
+- `simulation` (default): generates manifest, ingest template, runner scripts, and runtime status report.
+- `real`: runs a host-side provisioning command and emits a JSON provisioning report.
+
+### Real Mode Safety Controls
+Set these environment variables for controlled lab use:
+- `SECUREWIPE_USB_PROVISION_MODE=real`
+- `SECUREWIPE_USB_REAL_PROVISION_ENABLED=1`
+- `SECUREWIPE_USB_REAL_BREAKGLASS=1`
+- `SECUREWIPE_USB_REAL_ALLOWLIST=<comma-separated usb ids>`
+- `SECUREWIPE_USB_REQUIRE_OVERWRITE_CONFIRMATION=1`
+- `SECUREWIPE_USB_REAL_PROVISION_COMMAND=<command template>`
+- `SECUREWIPE_USB_REAL_PROVISION_ARGS_JSON=<json array>`
+- `SECUREWIPE_USB_MIN_SIZE_GB=<minimum removable USB size>`
+
+Legacy compatibility aliases are still accepted:
+- `SECUREWIPE_USB_PROVISION_COMMAND`
+- `SECUREWIPE_USB_PROVISION_ARGS_JSON`
+
+When overwrite confirmation is required, API callers must provide:
+- `usb_overwrite_confirmation_text=ERASE_USB`
+
+### Expected API Errors
+- `usb_overwrite_confirmation_required`: confirmation token missing or invalid in enforced real mode.
+- `usb_device_not_suitable`: target is non-removable or below minimum size threshold.
+- `usb_real_provisioning_not_enabled`: real provisioning command execution not explicitly enabled.
+- `usb_real_provision_command_missing`: real mode enabled without a configured command template.
 
 ---
 

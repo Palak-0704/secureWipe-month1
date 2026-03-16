@@ -1,0 +1,647 @@
+openapi: 3.1.0
+info:
+  title: SecureWipe API
+  version: 1.0.0
+  description: |
+    OpenAPI-style contract for the current SecureWipe backend. The API is simulation-first by default.
+    Destructive and host-side provisioning paths remain fail-closed behind runtime safety gates.
+servers:
+  - url: http://127.0.0.1:8080
+paths:
+  /api/system/health:
+    get:
+      summary: Get system health summary
+      responses:
+        '200':
+          description: Health payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemHealth'
+  /api/system/security:
+    get:
+      summary: Get security status summary
+      responses:
+        '200':
+          description: Security payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityStatus'
+  /api/devices:
+    get:
+      summary: List detected devices
+      responses:
+        '200':
+          description: Device inventory
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+  /api/usb/devices:
+    get:
+      summary: List removable USB candidates for offline handoff
+      responses:
+        '200':
+          description: USB candidate list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UsbCandidate'
+  /api/advisor/recommend:
+    post:
+      summary: Get wipe recommendation for selected devices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvisorRequest'
+      responses:
+        '200':
+          description: Recommendation payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvisorResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/chatbot:
+    post:
+      summary: Send message to chatbot assistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Chatbot response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/wipe/start:
+    post:
+      summary: Start legacy in-app wipe flow (simulation by default)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacyWipeStartRequest'
+      responses:
+        '200':
+          description: Wipe started in simulation mode or accepted legacy path
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WipeStartResponse'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+  /api/wipe/session/create:
+    post:
+      summary: Create offline wipe session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+      responses:
+        '200':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSessionResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/usb/prepare:
+    post:
+      summary: Prepare offline handoff package on removable media
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrepareUsbRequest'
+      responses:
+        '200':
+          description: USB handoff prepared
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrepareUsbResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/offline/wipe/execute:
+    post:
+      summary: Execute offline wipe against a previously created session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfflineExecuteRequest'
+      responses:
+        '200':
+          description: Offline wipe started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfflineExecuteResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/offline/result/ingest:
+    post:
+      summary: Ingest offline runtime result back into the backend
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfflineResultIngestRequest'
+      responses:
+        '200':
+          description: Offline result reconciled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfflineResultIngestResponse'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/wipe/sessions:
+    get:
+      summary: List offline wipe sessions
+      responses:
+        '200':
+          description: Session list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WipeSessionManifest'
+  /api/wipe/session/{session_id}/status:
+    get:
+      summary: Get offline session status
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /api/wipe/session/{session_id}/resume:
+    post:
+      summary: Resume session according to backend recovery policy
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Resume action ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumeSessionResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+  /api/wipe/session/{session_id}/artifacts:
+    get:
+      summary: Get completion artifacts summary for a session
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session artifacts
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /api/certificate/{wipe_id}/review:
+    get:
+      summary: Get certificate review summary
+      parameters:
+        - $ref: '#/components/parameters/WipeId'
+      responses:
+        '200':
+          description: Certificate review payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateReview'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /api/certificate/{wipe_id}/pdf:
+    get:
+      summary: Download certificate PDF
+      parameters:
+        - $ref: '#/components/parameters/WipeId'
+      responses:
+        '200':
+          description: PDF document
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /api/certificate/verify:
+    post:
+      summary: Verify signed certificate payload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+components:
+  parameters:
+    SessionId:
+      name: session_id
+      in: path
+      required: true
+      schema:
+        type: string
+    WipeId:
+      name: wipe_id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    ValidationError:
+      description: Semantically invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    ForbiddenError:
+      description: Safety or policy rejection
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    ConflictError:
+      description: Invalid state transition or conflicting payload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+  schemas:
+    ApiError:
+      type: object
+      required: [error, code]
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+    SystemHealth:
+      type: object
+      properties:
+        health:
+          type: string
+        update_available:
+          type: boolean
+    SecurityStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        protections_active:
+          type: boolean
+    DetectionConfidence:
+      type: object
+      properties:
+        encrypted:
+          type: string
+        hpa_dco:
+          type: string
+        is_system:
+          type: string
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+        dev_type:
+          type: string
+        model:
+          type: string
+        serial:
+          type: [string, 'null']
+        size_gb:
+          type: integer
+        allocated_gb:
+          type: [integer, 'null']
+        connection:
+          type: [string, 'null']
+        removable:
+          type: [boolean, 'null']
+        is_system:
+          type: [boolean, 'null']
+        smart_status:
+          type: [string, 'null']
+        encrypted:
+          type: boolean
+        hpa_dco:
+          type: boolean
+        detection_confidence:
+          $ref: '#/components/schemas/DetectionConfidence'
+    UsbCandidate:
+      type: object
+      properties:
+        id:
+          type: string
+        model:
+          type: string
+        size_gb:
+          type: integer
+        removable:
+          type: boolean
+    AdvisorRequest:
+      type: object
+      required: [device_ids]
+      properties:
+        device_ids:
+          type: array
+          items:
+            type: string
+        compliance:
+          type: string
+    AdvisorResponse:
+      type: object
+      additionalProperties: true
+    ChatRequest:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+    ChatResponse:
+      type: object
+      properties:
+        reply:
+          type: string
+    LegacyWipeStartRequest:
+      type: object
+      properties:
+        device_ids:
+          type: array
+          items:
+            type: string
+        method:
+          type: string
+        wipe_id:
+          type: string
+        confirmation_token:
+          type: string
+    WipeStartResponse:
+      type: object
+      additionalProperties: true
+    CreateSessionRequest:
+      type: object
+      required: [mode, target_device_id]
+      properties:
+        mode:
+          type: string
+          enum: [offline]
+        target_device_id:
+          type: string
+        compliance:
+          type: string
+    CreateSessionResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        session_id:
+          type: string
+        manifest_path:
+          type: string
+        phase:
+          type: string
+        progress_percent:
+          type: integer
+        resume_required:
+          type: boolean
+        resume_hint:
+          type: [string, 'null']
+    PrepareUsbRequest:
+      type: object
+      required: [session_id, usb_device_id]
+      properties:
+        session_id:
+          type: string
+        usb_device_id:
+          type: string
+        usb_overwrite_confirmation_text:
+          type: string
+    PrepareUsbResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        output_path:
+          type: string
+        next_step:
+          type: string
+        provisioning_mode:
+          type: string
+        provision_report_path:
+          type: string
+        bootable_verified:
+          type: boolean
+        phase:
+          type: string
+        progress_percent:
+          type: integer
+        resume_required:
+          type: boolean
+        resume_hint:
+          type: [string, 'null']
+    OfflineExecuteRequest:
+      type: object
+      required: [session_id, confirmation_text]
+      properties:
+        session_id:
+          type: string
+        confirmation_text:
+          type: string
+    OfflineExecuteResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        session_id:
+          type: string
+        phase:
+          type: string
+        progress_percent:
+          type: integer
+        resume_required:
+          type: boolean
+        resume_hint:
+          type: [string, 'null']
+        mode:
+          type: string
+        message:
+          type: string
+    VerificationEvidence:
+      type: object
+      properties:
+        sample_blocks_checked:
+          type: integer
+        sample_blocks_anomalies:
+          type: integer
+        checksum_algorithm:
+          type: string
+        verification_tool:
+          type: string
+        operator_id:
+          type: string
+    OfflineResultIngestRequest:
+      type: object
+      required:
+        - session_id
+        - target_device_id
+        - target_device_model
+        - target_device_size_gb
+        - verification_passed
+        - completion_status
+      properties:
+        schema_version:
+          type: integer
+          default: 1
+        session_id:
+          type: string
+        target_device_id:
+          type: string
+        target_device_model:
+          type: string
+        target_device_size_gb:
+          type: integer
+        verification_passed:
+          type: boolean
+        verification_notes:
+          type: string
+        completion_status:
+          type: string
+          enum: [verified, failed, partial, inconclusive]
+        verification_evidence:
+          $ref: '#/components/schemas/VerificationEvidence'
+    OfflineResultIngestResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        session_id:
+          type: string
+        phase:
+          type: string
+        progress_percent:
+          type: integer
+        resume_required:
+          type: boolean
+        resume_hint:
+          type: [string, 'null']
+        reconciled:
+          type: boolean
+        message:
+          type: string
+    ResumeSessionResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        session_id:
+          type: string
+        phase:
+          type: string
+        progress_percent:
+          type: integer
+        resume_required:
+          type: boolean
+        recommended_action:
+          type: string
+        resume_hint:
+          type: [string, 'null']
+        message:
+          type: string
+    SessionStatusResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+        phase:
+          type: string
+        progress_percent:
+          type: integer
+        resume_required:
+          type: boolean
+        resume_hint:
+          type: [string, 'null']
+    WipeSessionManifest:
+      type: object
+      additionalProperties: true
+    CertificateReview:
+      type: object
+      additionalProperties: true
