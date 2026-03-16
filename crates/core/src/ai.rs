@@ -18,7 +18,13 @@ pub async fn chatbot_groq_api_with_config(input: &str, model: &str, system_promp
     // Load .env if present
     let _ = dotenvy::dotenv();
     use std::env;
-    let api_key = env::var("GROQ_API_KEY").unwrap_or_else(|_| "YOUR_GROQ_API_KEY".to_string());
+    let api_key = env::var("GROQ_API_KEY").unwrap_or_default();
+    if api_key.is_empty()
+        || api_key == "YOUR_GROQ_API_KEY"
+        || api_key == "REPLACE_WITH_YOUR_GROQ_API_KEY"
+    {
+        return Err("[ERROR] GROQ_API_KEY is missing or placeholder. Set a valid key in environment.".to_string());
+    }
     let endpoint = env::var("GROQ_API_ENDPOINT").unwrap_or_else(|_| "https://api.groq.com/openai/v1/chat/completions".to_string());
     let client = reqwest::Client::new();
     let clean_input = sanitize_input(input);

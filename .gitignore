@@ -43,3 +43,6 @@ crates/core/data/offline_results/*.json
 
 # Generated local inventory snapshots
 structure.txt
+
+# Local packaging output
+release-artifacts/

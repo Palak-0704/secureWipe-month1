@@ -21,6 +21,7 @@ pub mod imp {
         warn!("Event-driven device monitoring for Windows is not implemented in CLI; falling back to polling.");
         start_device_monitoring(poll_interval_secs);
     }
+    use crate::devices::{DetectionConfidenceLevel, DeviceDetectionConfidence};
     use crate::platform::{Device, Partition};
     use std::collections::HashMap;
     use std::process::Command;
@@ -132,6 +133,13 @@ pub mod imp {
             metadata.insert("media_type".to_string(), media_type.clone());
             if let Some(ref s) = serial { metadata.insert("serial_number".to_string(), s.clone()); }
             let (smart_status, temperature_c, firmware) = get_advanced_metadata_windows(&id);
+
+            // Disk-level encryption is derived from partition-level BitLocker signals when available.
+            let encrypted = partitions.iter().any(|p| p.encrypted == Some(true));
+
+            // Basic conservative system-disk inference for Windows host scans.
+            let is_system_disk = id.to_ascii_uppercase().contains("PHYSICALDRIVE0");
+
             devices.push(Device {
                 id,
                 dev_type: if model.to_lowercase().contains("nvme") { "NVMe".to_string() } else if model.to_lowercase().contains("ssd") { "SSD".to_string() } else if model.to_lowercase().contains("usb") || media_type.to_lowercase().contains("usb") { "USB".to_string() } else if model.to_lowercase().contains("hdd") || media_type.to_lowercase().contains("fixed") { "HDD".to_string() } else { "Other".to_string() },
@@ -142,14 +150,19 @@ pub mod imp {
                 partitions,
                 connection: None,
                 removable: Some(media_type.to_lowercase().contains("removable") || media_type.to_lowercase().contains("usb")),
-                is_system: Some(true),
+                is_system: Some(is_system_disk),
                 smart_status,
                 temperature_c,
-                encrypted: false,
+                encrypted,
                 hpa_dco: false,
                 firmware,
                 error: None,
                 metadata,
+                detection_confidence: DeviceDetectionConfidence {
+                    encrypted: DetectionConfidenceLevel::Inferred,
+                    hpa_dco: DetectionConfidenceLevel::Unknown,
+                    is_system: DetectionConfidenceLevel::Inferred,
+                },
             });
         }
         Ok(devices)

@@ -1,17 +1,24 @@
 #[test]
 fn test_edgecase_huge_drive() {
-    let mut meta = HashMap::new();
-    meta.insert("smart_status".to_string(), "OK".to_string());
     let d = Device {
         id: "huge1".into(),
         dev_type: "HDD".into(),
         model: "BigDisk500TB".into(),
         serial: Some("BIG500TB".into()),
         size_gb: 500_000,
+        allocated_gb: None,
+        partitions: vec![],
+        connection: None,
+        removable: Some(false),
+        is_system: Some(false),
+        smart_status: Some("OK".to_string()),
+        temperature_c: None,
         encrypted: false,
         hpa_dco: false,
         firmware: Some("FW9.9".into()),
-        metadata: meta,
+        error: None,
+        metadata: HashMap::new(),
+        detection_confidence: Default::default(),
     };
     let ctx = ComplianceContext { gdpr: false, hipaa: false, nist: true, custom: None };
     let rec = recommend_method(&d, Some(&ctx));
@@ -27,10 +34,19 @@ fn test_invalid_device_missing_fields() {
         model: "".into(),
         serial: None,
         size_gb: 0,
+        allocated_gb: None,
+        partitions: vec![],
+        connection: None,
+        removable: None,
+        is_system: None,
+        smart_status: None,
+        temperature_c: None,
         encrypted: false,
         hpa_dco: false,
         firmware: None,
+        error: None,
         metadata: HashMap::new(),
+        detection_confidence: Default::default(),
     };
     let ctx = ComplianceContext { gdpr: false, hipaa: false, nist: false, custom: None };
     let rec = recommend_method(&d, Some(&ctx));
@@ -51,18 +67,25 @@ use std::collections::HashMap;
 
 #[test]
 fn test_edgecase_usb_encrypted() {
-    let mut meta = HashMap::new();
-    meta.insert("smart_status".to_string(), "OK".to_string());
     let d = Device {
         id: "usb1".into(),
         dev_type: "USB".into(),
         model: "EdgeUSB".into(),
         serial: Some("1234".into()),
         size_gb: 8,
+        allocated_gb: None,
+        partitions: vec![],
+        connection: None,
+        removable: Some(true),
+        is_system: Some(false),
+        smart_status: Some("OK".to_string()),
+        temperature_c: None,
         encrypted: true,
         hpa_dco: false,
         firmware: Some("FW1.2".into()),
-        metadata: meta,
+        error: None,
+        metadata: HashMap::new(),
+        detection_confidence: Default::default(),
     };
     let ctx = ComplianceContext { gdpr: true, hipaa: false, nist: false, custom: None };
     let rec = recommend_method(&d, Some(&ctx));
@@ -78,10 +101,19 @@ fn test_edgecase_phone() {
         model: "EdgePhone".into(),
         serial: None,
         size_gb: 64,
+        allocated_gb: None,
+        partitions: vec![],
+        connection: None,
+        removable: Some(false),
+        is_system: Some(false),
+        smart_status: None,
+        temperature_c: None,
         encrypted: false,
         hpa_dco: false,
         firmware: None,
+        error: None,
         metadata: HashMap::new(),
+        detection_confidence: Default::default(),
     };
     let ctx = ComplianceContext { gdpr: false, hipaa: true, nist: true, custom: None };
     let rec = recommend_method(&d, Some(&ctx));

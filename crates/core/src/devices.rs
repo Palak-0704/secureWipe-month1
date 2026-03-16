@@ -193,6 +193,30 @@ pub struct Partition {
     pub encrypted: Option<bool>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DetectionConfidenceLevel {
+    Measured,
+    Inferred,
+    Unknown,
+}
+
+impl Default for DetectionConfidenceLevel {
+    fn default() -> Self {
+        Self::Unknown
+    }
+}
+
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub struct DeviceDetectionConfidence {
+    #[serde(default)]
+    pub encrypted: DetectionConfidenceLevel,
+    #[serde(default)]
+    pub hpa_dco: DetectionConfidenceLevel,
+    #[serde(default)]
+    pub is_system: DetectionConfidenceLevel,
+}
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Device {
     pub id: String,
@@ -212,6 +236,8 @@ pub struct Device {
     pub firmware: Option<String>,
     pub error: Option<String>,
     pub metadata: HashMap<String, String>,
+    #[serde(default)]
+    pub detection_confidence: DeviceDetectionConfidence,
 }
 use std::fs;
 use serde_json::Value as JsonValue;
@@ -305,6 +331,9 @@ pub fn detect_devices() -> Vec<Device> {
                     metadata.insert("media_type".to_string(), media_type.clone());
                     if let Some(ref s) = serial { metadata.insert("serial_number".to_string(), s.clone()); }
 
+                    // Basic conservative system-disk inference for Windows host scans.
+                    let is_system_disk = id.to_ascii_uppercase().contains("PHYSICALDRIVE0");
+
                     devices.push(Device {
                         id,
                         dev_type,
@@ -315,7 +344,7 @@ pub fn detect_devices() -> Vec<Device> {
                         partitions: vec![],
                         connection,
                         removable: Some(media_type.to_lowercase().contains("removable") || media_type.to_lowercase().contains("usb")),
-                        is_system: Some(true),
+                        is_system: Some(is_system_disk),
                         smart_status: None,
                         temperature_c: None,
                         encrypted: false,
@@ -323,6 +352,11 @@ pub fn detect_devices() -> Vec<Device> {
                         firmware: None,
                         error: None,
                         metadata,
+                        detection_confidence: DeviceDetectionConfidence {
+                            encrypted: DetectionConfidenceLevel::Unknown,
+                            hpa_dco: DetectionConfidenceLevel::Unknown,
+                            is_system: DetectionConfidenceLevel::Inferred,
+                        },
                     });
                 } else {
                     println!("[WMIC] columns did NOT match this line");

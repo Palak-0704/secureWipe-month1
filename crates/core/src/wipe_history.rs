@@ -1,7 +1,6 @@
-use axum::{Json, extract::Path};
+use axum::Json;
 use serde::Serialize;
 use std::fs;
-use chrono::Utc;
 
 #[derive(Serialize)]
 pub struct WipeHistoryEntry {
