@@ -1,0 +1,10 @@
+﻿{
+  "timestamp": "2026-05-05 18:23:45",
+  "usb_drive": "E",
+  "disk_number": 1,
+  "status": "provisioned_legacy_bios",
+  "boot_method": "legacy_bios_mbr",
+  "auto_launch": "offline_runtime.exe",
+  "files": ["offline_runtime.exe", "wipe_manifest.json", "RUN_OFFLINE_WIPE_ENHANCED.cmd", "boot.ini", "autorun.inf"],
+  "bootable_verified": true
+}

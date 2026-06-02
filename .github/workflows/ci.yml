@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Month1-Submission
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: Month1-Submission
+
+      - name: Run backend tests
+        run: cargo test -p securewipe-core
+
+      - name: Run real_erase executor tests
+        run: cargo test -p securewipe-core --features real_erase offline_executor
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Month1-Submission/frontend/frontend-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Run frontend tests
+        run: npm run test
+
+      - name: Run frontend lint
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
+  release_artifacts:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: github.event_name != 'pull_request'
+    defaults:
+      run:
+        working-directory: Month1-Submission
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: Month1-Submission
+
+      - name: Build CLI release artifact
+        run: cargo build --release -p securewipe-cli
+
+      - name: Package release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-artifacts
+          cp target/release/securewipe-cli release-artifacts/
+          cp README.md release-artifacts/
+          cp docs/OPENAPI.yaml release-artifacts/
+          cp docs/ARCHITECTURE.md release-artifacts/
+          cp docs/COMPATIBILITY_AND_SAFETY.md release-artifacts/
+          cp docs/PRIVACY_AND_SECURITY.md release-artifacts/
+          cp docs/VULNERABILITY_DISCLOSURE.md release-artifacts/
+
+      - name: Generate checksums
+        shell: bash
+        run: bash scripts/generate_checksums.sh release-artifacts
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: securewipe-release-artifacts
+          path: Month1-Submission/release-artifacts
