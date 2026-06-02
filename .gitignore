@@ -46,3 +46,26 @@ structure.txt
 
 # Local packaging output
 release-artifacts/
+
+# Exclude large vendor binaries and generated artifacts
+ventoy-1.1.12/
+SecureWipe_Build/
+data/bootable_usb/
+
+# Ignore editor/agent local settings
+.claude/
+.codex/
+
+# Ignore build and packaging artifacts
+/target/
+/**/target/
+
+# Common large binary/archive formats
+*.exe
+*.iso
+*.img
+*.zip
+*.tar.xz
+*.xz
+*.7z
+
